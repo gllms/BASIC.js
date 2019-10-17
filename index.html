@@ -2,9 +2,43 @@
 <html>
   <head>
     <title>BASIC.js</title>
+    <style>
+      body {
+        padding: 2em;
+        font-family: sans-serif;
+        color: #222;
+      }
+      textarea {
+        width: 100%;
+      }
+
+      #output {
+        font-family: Consolas, monospace;
+        color: black;
+      }
+
+      button {
+        border: none;
+        padding: 1em;
+        border-radius: 2px;
+        background: black;
+        color: white;
+      }
+    </style>
   </head>
   <body>
-
+    <h1>BASIC.js</h1>
+    <h2>Input</h2>
+    <textarea id="input" rows="10">10 REM this will be ignored
+20 PRINT "Hello, World!"
+30 A=2*9
+40 B=A-10
+50 PRINT B
+60 END</textarea>
+    <button onclick="run()">CLICK</button>
+    <h2>Output</h2>
+    <code id="output">output</code>
+    <script src="script.js"></script>
     <script src="BASIC.js"></script>
   </body>
 </html>
