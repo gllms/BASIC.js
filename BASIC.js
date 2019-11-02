@@ -4,6 +4,12 @@ class SyntaxTree {
     this.pos = 0;
     this.tree = {};
     this.scope = {};
+    this.functions = {
+      CHR$: c => String.fromCharCode(c),
+      CLD: () => this.scope = this.functions,
+      INT: c => Math.floor(c),
+      INUM: c => Math.round(c)
+    }
     this.types = [
       {
         reg: /^\d+ (LET )?(\w)=([\w\d+\-*/()]+)$/,
@@ -23,6 +29,8 @@ class SyntaxTree {
 
   // create the syntax tree
   create() {
+    // add standard functions to scope
+    this.scope = Object.assign({}, this.functions);
     // split into seperate lines
     this.lines = this.input.split("\n");
     
