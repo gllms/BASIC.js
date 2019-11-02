@@ -1,6 +1,6 @@
 class SyntaxTree {
   constructor(input) {
-    this.input = input;
+    this.input = input ? input : "";
     this.pos = 0;
     this.tree = {};
     this.scope = {};
@@ -24,7 +24,7 @@ class SyntaxTree {
         })
       }
     ];
-    this.create();
+    if (input) this.create();
   }
 
   // create the syntax tree
