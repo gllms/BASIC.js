@@ -1,5 +1,7 @@
+let t;
+
 function run() {
-  let t = new SyntaxTree($("#input").value);
+  t = new SyntaxTree($("#input").value);
   $("#output").innerHTML = "Hello, World!";
 }
 
