@@ -1,8 +1,13 @@
-let t;
+let t = new SyntaxTree($("#input").value);
 
 function run() {
-  t = new SyntaxTree($("#input").value);
-  $("#output").innerHTML = "Hello, World!";
+  t.reset();
+  $("#output").innerHTML = "";
+  let r = {type: "START"};
+  while (r.type !== "END") {
+    r = t.step();
+    if (r.type == "string") $("#output").innerHTML += "<br />" + r.value;
+  }
 }
 
 function $(input) {

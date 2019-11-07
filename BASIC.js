@@ -12,20 +12,29 @@ class SyntaxTree {
     }
     this.types = [
       {
+        type: "REM",
         reg: /^\d+ REM (.*)$/,
         parse: (r) => ({ // without () it would be a code block
           command: "REM",
           value: r[1]
-        })
+        }),
+        run: (t) => {
+          return {type: "comment"};
+        }
       },
       {
+        type: "PRINT",
         reg: /^\d+ PRINT (.*)$/,
         parse: (r) => ({
           command: "PRINT",
           value: r[1]
-        })
+        }),
+        run: (t) => {
+          return {type: "string", value: this.eval(t.value).toString()};
+        }
       },
       {
+        type: "LET",
         reg: /^\d+ (LET )?(\w)=([\w\d+\-*/()]+)$/,
         parse: (r) => ({
           command: "LET",
@@ -33,17 +42,26 @@ class SyntaxTree {
             var: r[2],
             expr: r[3]
           }
-        })
+        }),
+        run: (t) => {
+          this.scope[t.args.var] = this.eval(t.args.expr);
+          return {type: "assignment", var: t.args.var, expr: t.args.expr};
+        }
       }, {
+        type: "FOR",
         reg: /^\d+ FOR (\w) *=[ 0-9A-Z+\-*\/^]+ TO ([ 0-9A-Z+\-*\/^]+)( STEP (\d))?$/,
         parse: (r) => ({
           command: "FOR"
         })
       }, {
+        type: "END",
         reg: /^\d+ END.*$/,
         parse: (r) => ({
           command: "END"
-        })
+        }),
+        run: (t) => {
+          return {type: "END"}
+        }
       }
     ];
     if (input) this.create();
@@ -58,6 +76,9 @@ class SyntaxTree {
 
     // give all the RegExp's in the array as a new array
     let regs = this.types.map((e) => e.reg);
+
+    // create list of types
+    this.typeNames = this.types.map((e) => e.type);
 
     // loop over each line
     this.lines.forEach(line => {
@@ -80,10 +101,36 @@ class SyntaxTree {
     });
   }
 
+  // run next line
+  step() {
+    this.pos++;
+    let dpos = 0;
+
+    // stop trying after 100 tries
+    while (!this.tree[this.pos] && dpos < 100) {
+      this.pos++;
+      dpos++;
+    }
+    if (!this.tree[this.pos]) return {type: "END"};
+    return this.run(this.pos);
+  }
+
+  // run specific line
+  run(pos) {
+    const type = this.typeNames.indexOf(this.tree[pos].command)
+    return this.types[type].run(this.tree[pos]);
+  }
+
   eval(str) {
     let result = math.evaluate(str, this.scope);
     return typeof result == "object"
       ? new ReferenceError("Variable not found in scope")
       : result;
+  }
+
+  reset() {
+    this.pos = 0;
+    this.scope = {};
+    return true;
   }
 }
