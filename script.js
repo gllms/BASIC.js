@@ -1,19 +1,12 @@
 let t = new SyntaxTree();
+t.outputElement = $("#output");
 
 function run() {
   t.reset();
   t.input = $("#input").value;
   t.create();
   $("#output").innerHTML = "";
-  let r = { type: "START" };
-  let results = [];
-  while (r.type !== "END") {
-    r = t.step();
-    if (r.type == "string") {
-      results.push(r.value);
-      $("#output").innerHTML = results.join("<br />");
-    }
-  }
+  t.runAll();
 }
 
 function $(input) {
