@@ -1,12 +1,18 @@
-let t = new SyntaxTree($("#input").value);
+let t = new SyntaxTree();
 
 function run() {
   t.reset();
+  t.input = $("#input").value;
+  t.create();
   $("#output").innerHTML = "";
-  let r = {type: "START"};
+  let r = { type: "START" };
+  let results = [];
   while (r.type !== "END") {
     r = t.step();
-    if (r.type == "string") $("#output").innerHTML += "<br />" + r.value;
+    if (r.type == "string") {
+      results.push(r.value);
+      $("#output").innerHTML = results.join("<br />");
+    }
   }
 }
 
