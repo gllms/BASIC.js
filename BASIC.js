@@ -35,7 +35,7 @@ class SyntaxTree {
       },
       {
         type: "LET",
-        reg: /^\d+ (LET )?(\w)=([\w\d+\-*/()]+)$/,
+        reg: /^\d+ (LET )?(\w) *= *([\w\d+\-*/() ]+)$/,
         parse: (r) => ({
           command: "LET",
           args: {
@@ -49,10 +49,27 @@ class SyntaxTree {
         }
       }, {
         type: "FOR",
-        reg: /^\d+ FOR (\w) *=[ 0-9A-Z+\-*\/^]+ TO ([ 0-9A-Z+\-*\/^]+)( STEP (\d))?$/,
+        reg: /^\d+ FOR (\w) *= *([ 0-9A-Z+\-*\/^]+) TO (?:(.+)(?=STEP)|(.+))(?:STEP (\d))?$/,
         parse: (r) => ({
-          command: "FOR"
-        })
+          command: "FOR",
+          args: {
+            var: r[1],
+            start: r[2],
+            to: r[3] ? r[3] : r[4],
+            step: r[5] ? r[5] : 1
+          }
+        }),
+        run: (t) => {
+          this.scope[t.args.var] = this.eval(t.args.start);
+          let start = this.eval(t.args.start);
+          let to = this.eval(t.args.to);
+          let step = this.eval(t.args.step);
+          for (let i = this.scope[t.args.var]; i <= to; i += step) {
+            console.log(this.scope[t.args.var]);
+            this.scope[t.args.var] += step;
+          }
+          return {type: "END"}
+        }
       }, {
         type: "END",
         reg: /^\d+ END.*$/,
