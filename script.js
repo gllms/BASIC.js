@@ -1,4 +1,5 @@
 let t = new SyntaxTree();
+t.debug = true;
 
 function run() {
   t.reset();

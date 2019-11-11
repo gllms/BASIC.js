@@ -4,6 +4,7 @@ class SyntaxTree {
     this.pos = 0;
     this.tree = {};
     this.scope = {};
+    this.debug = false;
     this.functions = {
       CHR$: c => String.fromCharCode(c),
       CLD: () => this.scope = this.functions,
@@ -135,7 +136,9 @@ class SyntaxTree {
   // run specific line
   run(pos) {
     const type = this.typeNames.indexOf(this.tree[pos].command)
-    return this.types[type].run(this.tree[pos]);
+    const result = this.types[type].run(this.tree[pos]);
+    if (this.debug) console.log(result);
+    return result;
   }
 
   eval(str) {
