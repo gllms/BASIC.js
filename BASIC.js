@@ -7,12 +7,12 @@ class SyntaxTree {
     this.debug = false;
     this.results = [];
     this.outputElement = undefined,
-    this.functions = {
-      CHR$: c => String.fromCharCode(c),
-      CLD: () => this.scope = this.functions,
-      INT: c => Math.floor(c),
-      INUM: c => Math.round(c)
-    }
+      this.functions = {
+        CHR$: c => String.fromCharCode(c),
+        CLD: () => this.scope = this.functions,
+        INT: c => Math.floor(c),
+        INUM: c => Math.round(c)
+      }
     this.types = [
       {
         type: "REM",
@@ -22,7 +22,7 @@ class SyntaxTree {
           value: r[1]
         }),
         run: (t) => {
-          return {type: "comment"};
+          return { type: "comment" };
         }
       },
       {
@@ -33,13 +33,14 @@ class SyntaxTree {
           value: r[1]
         }),
         run: (t) => {
-          this.results.push(this.eval(t.value).toString());
-          return {type: "string", value: this.eval(t.value).toString()};
+          let result = this.eval(t.value).toString();
+          this.print(result);
+          return { type: "string", value: result };
         }
       },
       {
         type: "LET",
-        reg: /^\d+ (LET )?(\w) *= *([\w\d+\-*/() ]+)$/,
+        reg: /^\d+ (LET )?(\w) *= *([\w\d+\-*/^() ]+)$/,
         parse: (r) => ({
           command: "LET",
           args: {
@@ -49,7 +50,7 @@ class SyntaxTree {
         }),
         run: (t) => {
           this.scope[t.args.var] = this.eval(t.args.expr);
-          return {type: "assignment", var: t.args.var, expr: t.args.expr};;
+          return { type: "assignment", var: t.args.var, expr: t.args.expr };;
         }
       }, {
         type: "FOR",
@@ -63,24 +64,37 @@ class SyntaxTree {
             step: r[5] ? r[5] : 1
           }
         }),
-        run: (t) => {
+        run: (t, n) => {
           this.scope[t.args.var] = this.eval(t.args.start);
           let start = this.eval(t.args.start);
           let to = this.eval(t.args.to);
           let step = this.eval(t.args.step);
-          for (let i = this.scope[t.args.var]; i <= to; i += step) {
-            console.log(this.scope[t.args.var]);
+          let l = {type: "start"};
+          while (true) {
+            while (l.type != "next") {
+              l = this.step();
+            }
             this.scope[t.args.var] += step;
+            if (this.scope[t.args.var] >= to) break;
+            this.pos = n;
+            l = {type: "start"};
           }
-          return {type: "loop"};
+          return { type: "loop" };
         }
+      }, {
+        type: "NEXT",
+        reg: /^\d+ NEXT.*$/,
+        parse: (r) => ({
+          command: "NEXT"
+        }),
+        run: (t) => ({ type: "next" })
       }, {
         type: "END",
         reg: /^\d+ END.*$/,
         parse: (r) => ({
           command: "END"
         }),
-        run: (t) => ({type: "end"})
+        run: (t) => ({ type: "end" })
       }
     ];
     if (input) this.create();
@@ -130,23 +144,20 @@ class SyntaxTree {
       this.pos++;
       dpos++;
     }
-    if (!this.tree[this.pos]) return {type: "end"};
+    if (!this.tree[this.pos]) return { type: "end" };
     return this.run(this.pos);
   }
 
   // run specific line
   run(pos) {
     const type = this.typeNames.indexOf(this.tree[pos].command);
-    const result = this.types[type].run(this.tree[pos]);
-    if (typeof result == "object" && this.outputElement) {
-      this.outputElement.innerHTML = this.results.join("<br />");
-    }
+    const result = this.types[type].run(this.tree[pos], pos);
     if (this.debug) console.log(result);
     return result;
   }
 
   runAll() {
-    let r = {type: "start"};
+    let r = { type: "start" };
     while (r.type != "end") r = t.step();
   }
 
@@ -155,6 +166,11 @@ class SyntaxTree {
     return typeof result == "object"
       ? new ReferenceError("Variable not found in scope")
       : result;
+  }
+
+  print(str) {
+    this.results.push(str);
+    this.outputElement.innerHTML = this.results.join("<br />");
   }
 
   reset() {

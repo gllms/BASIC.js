@@ -1,5 +1,5 @@
 let t = new SyntaxTree();
-t.debug = true;
+t.debug = false;
 t.outputElement = $("#output");
 
 function run() {
