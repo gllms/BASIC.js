@@ -5,6 +5,8 @@ class SyntaxTree {
     this.tree = {};
     this.scope = {};
     this.debug = false;
+    this.results = [];
+    this.outputElement = undefined,
     this.functions = {
       CHR$: c => String.fromCharCode(c),
       CLD: () => this.scope = this.functions,
@@ -31,6 +33,7 @@ class SyntaxTree {
           value: r[1]
         }),
         run: (t) => {
+          this.results.push(this.eval(t.value).toString());
           return {type: "string", value: this.eval(t.value).toString()};
         }
       },
@@ -46,7 +49,7 @@ class SyntaxTree {
         }),
         run: (t) => {
           this.scope[t.args.var] = this.eval(t.args.expr);
-          return {type: "assignment", var: t.args.var, expr: t.args.expr};
+          return {type: "assignment", var: t.args.var, expr: t.args.expr};;
         }
       }, {
         type: "FOR",
@@ -69,7 +72,7 @@ class SyntaxTree {
             console.log(this.scope[t.args.var]);
             this.scope[t.args.var] += step;
           }
-          return {type: "END"}
+          return {type: "loop"};
         }
       }, {
         type: "END",
@@ -77,9 +80,7 @@ class SyntaxTree {
         parse: (r) => ({
           command: "END"
         }),
-        run: (t) => {
-          return {type: "END"}
-        }
+        run: (t) => ({type: "end"})
       }
     ];
     if (input) this.create();
@@ -129,16 +130,24 @@ class SyntaxTree {
       this.pos++;
       dpos++;
     }
-    if (!this.tree[this.pos]) return {type: "END"};
+    if (!this.tree[this.pos]) return {type: "end"};
     return this.run(this.pos);
   }
 
   // run specific line
   run(pos) {
-    const type = this.typeNames.indexOf(this.tree[pos].command)
+    const type = this.typeNames.indexOf(this.tree[pos].command);
     const result = this.types[type].run(this.tree[pos]);
+    if (typeof result == "object" && this.outputElement) {
+      this.outputElement.innerHTML = this.results.join("<br />");
+    }
     if (this.debug) console.log(result);
     return result;
+  }
+
+  runAll() {
+    let r = {type: "start"};
+    while (r.type != "end") r = t.step();
   }
 
   eval(str) {
@@ -151,6 +160,7 @@ class SyntaxTree {
   reset() {
     this.pos = 0;
     this.scope = {};
+    this.results = [];
     return true;
   }
 }
