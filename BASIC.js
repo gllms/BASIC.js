@@ -33,7 +33,7 @@ class SyntaxTree {
         }),
         run: (t) => {
           this.results.push(this.eval(t.value).toString());
-          return this.results;
+          return {type: "string", value: this.eval(t.value).toString()};
         }
       },
       {
