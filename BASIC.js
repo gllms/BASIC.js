@@ -8,16 +8,16 @@ class SyntaxTree {
     this.results = [];
     this.outputElement = undefined,
       this.functions = {
-        ABS: c => Math.abs(c),
-        ASC: c => c.charCodeAt(0),
-        ATN: c => Math.atan(c),
-        CHR$: c => String.fromCharCode(c),
-        CLD: () => this.scope = this.functions,
-        COS: c => Math.cos(c),
-        DEG: c => c * (180/Math.PI),
-        EXP: c => Math.E^c,
-        INT: c => Math.floor(c),
-        INUM: c => Math.round(c)
+        abs: c => Math.abs(c),
+        asc: c => c.charCodeAt(0),
+        atn: c => Math.atan(c),
+        chr$: c => String.fromCharCode(c),
+        cld: () => this.scope = this.functions,
+        cos: c => Math.cos(c),
+        deg: c => c * (180/Math.PI),
+        exp: c => Math.E^c,
+        int: c => Math.floor(c),
+        inum: c => Math.round(c),
       }
     this.types = [
       {
@@ -50,7 +50,7 @@ class SyntaxTree {
         parse: (r) => ({
           command: "LET",
           args: {
-            var: r[2],
+            var: r[2].toLowerCase(),
             expr: r[3]
           }
         }),
@@ -64,7 +64,7 @@ class SyntaxTree {
         parse: (r) => ({
           command: "FOR",
           args: {
-            var: r[1],
+            var: r[1].toLowerCase(),
             start: r[2],
             to: r[3] ? r[3] : r[4],
             step: r[5] ? r[5] : 1
@@ -168,6 +168,7 @@ class SyntaxTree {
   }
 
   eval(str) {
+    if (typeof str == "string") str = str.toLowerCase();
     let result = math.evaluate(str, this.scope);
     return typeof result == "object"
       ? new ReferenceError("Variable not found in scope")
