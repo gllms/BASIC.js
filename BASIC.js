@@ -186,6 +186,7 @@ class SyntaxTree {
 
   reset() {
     this.pos = 0;
+    this.tree = {};
     this.scope = {};
     this.results = [];
     return true;
