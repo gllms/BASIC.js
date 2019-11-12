@@ -125,6 +125,7 @@ class SyntaxTree {
 
     // loop over each line
     this.lines.forEach(line => {
+      line = line.trim();
       let words = line.split(" ");  // split into words
       let lineNumber = words[0];
 
