@@ -8,8 +8,14 @@ class SyntaxTree {
     this.results = [];
     this.outputElement = undefined,
       this.functions = {
+        ABS: c => Math.abs(c),
+        ASC: c => c.charCodeAt(0),
+        ATN: c => Math.atan(c),
         CHR$: c => String.fromCharCode(c),
         CLD: () => this.scope = this.functions,
+        COS: c => Math.cos(c),
+        DEG: c => c * (180/Math.PI),
+        EXP: c => Math.E^c,
         INT: c => Math.floor(c),
         INUM: c => Math.round(c)
       }
