@@ -18,6 +18,10 @@ class SyntaxTree {
         exp: c => Math.E^c,
         int: c => Math.floor(c),
         inum: c => Math.round(c),
+        len: c => c.length,
+        log: c => Math.log(c),
+        mid$: (c, a, b) => c.substring(a-1,a+b-1),
+        mod: (a,b) => a%b
       }
     this.types = [
       {
