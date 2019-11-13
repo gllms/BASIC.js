@@ -101,7 +101,7 @@ class SyntaxTree {
         run: (t) => ({ type: "next" })
       }, {
         type: "GOTO",
-        reg: /^\d+ GOTO (\d+)$/,
+        reg: /^\d+ GOTO (.*)$/,
         parse: (r) => ({
           command: "GOTO",
           line: r[1]
@@ -112,7 +112,7 @@ class SyntaxTree {
         }
       }, {
         type: "GOSUB",
-        reg: /^\d+ GOSUB (\d+)$/,
+        reg: /^\d+ GOSUB (.*)$/,
         parse: (r) => ({
           command: "GOSUB",
           line: r[1]
