@@ -2,6 +2,7 @@ class SyntaxTree {
   constructor(input) {
     this.input = input ? input : "";
     this.pos = 0;
+    this.goSubPos = undefined;
     this.tree = {};
     this.scope = {};
     this.debug = false;
@@ -79,7 +80,7 @@ class SyntaxTree {
           let start = this.eval(t.args.start);
           let to = this.eval(t.args.to);
           let step = this.eval(t.args.step);
-          let l = {type: "start"};
+          let l = { type: "start" };
           while (true) {
             while (l.type != "next") {
               l = this.step();
@@ -87,7 +88,7 @@ class SyntaxTree {
             this.scope[t.args.var] += step;
             if (this.scope[t.args.var] >= to) break;
             this.pos = n;
-            l = {type: "start"};
+            l = { type: "start" };
           }
           return { type: "loop" };
         }
@@ -98,6 +99,43 @@ class SyntaxTree {
           command: "NEXT"
         }),
         run: (t) => ({ type: "next" })
+      }, {
+        type: "GOTO",
+        reg: /^\d+ GOTO (\d+)$/,
+        parse: (r) => ({
+          command: "GOTO",
+          line: r[1]
+        }),
+        run: (t) => {
+          this.pos = this.eval(t.line) - 1;
+          return { type: "goto", line: t.line };
+        }
+      }, {
+        type: "GOSUB",
+        reg: /^\d+ GOSUB (\d+)$/,
+        parse: (r) => ({
+          command: "GOSUB",
+          line: r[1]
+        }),
+        run: (t) => {
+          this.goSubPos = this.pos;
+          this.pos = this.eval(t.line) - 1;
+          return { type: "gosub", line: t.line };
+        }
+      }, {
+        type: "RETURN",
+        reg: /^\d+ RETURN$/,
+        parse: (r) => ({
+          command: "RETURN"
+        }),
+        run: (t) => {
+          if (this.goSubPos !== undefined) {
+            this.pos = this.goSubPos;
+          } else {
+            throw new SyntaxError("RETURN called without GOSUB");
+          }
+          return { type: "return" };
+        }
       }, {
         type: "END",
         reg: /^\d+ END.*$/,
