@@ -27,7 +27,7 @@ class SyntaxTree {
     this.types = [
       {
         type: "REM",
-        reg: /^\d+ REM (.*)$/,
+        reg: /^(?:\d+ )?REM (.*)$/,
         parse: (r) => ({ // without () it would be a code block
           command: "REM",
           value: r[1]
@@ -38,7 +38,7 @@ class SyntaxTree {
       },
       {
         type: "PRINT",
-        reg: /^\d+ PRINT (.*)$/,
+        reg: /^(?:\d+ )?PRINT (.*)$/,
         parse: (r) => ({
           command: "PRINT",
           value: r[1]
@@ -51,7 +51,7 @@ class SyntaxTree {
       },
       {
         type: "LET",
-        reg: /^\d+ (LET )?(\w) *= *([\w\d+\-*/^() ]+)$/,
+        reg: /^(?:\d+ )?(LET )?(\w) *= *([\w\d+\-*/^() ]+)$/,
         parse: (r) => ({
           command: "LET",
           args: {
@@ -65,7 +65,7 @@ class SyntaxTree {
         }
       }, {
         type: "FOR",
-        reg: /^\d+ FOR (\w) *= *([ 0-9A-Z+\-*\/^]+) TO (?:(.+)(?=STEP)|(.+))(?:STEP (\d))?$/,
+        reg: /^(?:\d+ )?FOR (\w) *= *([ 0-9A-Z+\-*\/^]+) TO (?:(.+)(?=STEP)|(.+))(?:STEP (\d))?$/,
         parse: (r) => ({
           command: "FOR",
           args: {
@@ -80,28 +80,28 @@ class SyntaxTree {
           let start = this.eval(t.args.start);
           let to = this.eval(t.args.to);
           let step = this.eval(t.args.step);
-          let l = { type: "start" };
+          let l = [{ type: "start" }];
           while (true) {
-            while (l.type != "next") {
+            while (l[0].type != "next") {
               l = this.step();
             }
             this.scope[t.args.var] += step;
             if (this.scope[t.args.var] >= to) break;
             this.pos = n;
-            l = { type: "start" };
+            l = [{ type: "start" }];
           }
           return { type: "loop" };
         }
       }, {
         type: "NEXT",
-        reg: /^\d+ NEXT.*$/,
+        reg: /^(?:\d+ )?NEXT.*$/,
         parse: (r) => ({
           command: "NEXT"
         }),
         run: (t) => ({ type: "next" })
       }, {
         type: "GOTO",
-        reg: /^\d+ GOTO (.*)$/,
+        reg: /^(?:\d+ )?GOTO (.*)$/,
         parse: (r) => ({
           command: "GOTO",
           line: r[1]
@@ -112,7 +112,7 @@ class SyntaxTree {
         }
       }, {
         type: "GOSUB",
-        reg: /^\d+ GOSUB (.*)$/,
+        reg: /^(?:\d+ )?GOSUB (.*)$/,
         parse: (r) => ({
           command: "GOSUB",
           line: r[1]
@@ -124,7 +124,7 @@ class SyntaxTree {
         }
       }, {
         type: "RETURN",
-        reg: /^\d+ RETURN$/,
+        reg: /^(?:\d+ )?RETURN$/,
         parse: (r) => ({
           command: "RETURN"
         }),
@@ -138,7 +138,7 @@ class SyntaxTree {
         }
       }, {
         type: "END",
-        reg: /^\d+ END.*$/,
+        reg: /^(?:\d+ )?END.*$/,
         parse: (r) => ({
           command: "END"
         }),
@@ -164,22 +164,47 @@ class SyntaxTree {
     // loop over each line
     this.lines.forEach(line => {
       line = line.trim();
-      let words = line.split(" ");  // split into words
-      let lineNumber = words[0];
+
+      let lineNumber = line.split(" ")[0];
 
       // check if first "word" is a number
       if (!lineNumber.match(/^\d+$/)) {
         throw new SyntaxError("Line must start with numbers (line " + lineNumber + ")");
       }
 
-      // TODO: check against types array
-      let type = this.types.findIndex((e, i) => regs[i].test(line));
-      if (type >= 0) {
-        const r = this.types[type].reg.exec(line);
-        this.tree[lineNumber] = this.types[type].parse(r);
+      // find the colons that are not inside strings
+      let letters = line.split("");
+      let inString = false;
+      let locs = [];
+      let subLines = [];
+      letters.forEach((e, i) => {
+        if (e == "\"") inString = inString == false ? true : false;
+        else if (e == ":") if (!inString) locs.push(i);
+      });
+
+      if (locs.length) {
+        locs.push(line.length);
+        locs.forEach((e, i) => {
+          subLines.push(line.slice(locs[i - 1] + (i > 0 ? 1 : 0), e));
+        })
       } else {
-        throw new ReferenceError("Function not defined (line " + lineNumber + ")");
+        subLines.push(line);
       }
+
+      this.tree[lineNumber] = [];
+
+      subLines.forEach((subLine) => {
+        subLine = subLine.trim();
+        let words = subLine.split(" ");  // split into words
+
+        let type = this.types.findIndex((e, i) => regs[i].test(subLine));
+        if (type >= 0) {
+          const r = this.types[type].reg.exec(subLine);
+          this.tree[lineNumber].push(this.types[type].parse(r));
+        } else {
+          throw new ReferenceError("Function not defined (line " + lineNumber + ")");
+        }
+      });
     });
   }
 
@@ -193,21 +218,25 @@ class SyntaxTree {
       this.pos++;
       dpos++;
     }
-    if (!this.tree[this.pos]) return { type: "end" };
+    if (!this.tree[this.pos]) return [{ type: "end" }];
     return this.run(this.pos);
   }
 
   // run specific line
   run(pos) {
-    const type = this.typeNames.indexOf(this.tree[pos].command);
-    const result = this.types[type].run(this.tree[pos], pos);
-    if (this.debug) console.log(result);
-    return result;
+    let results = [];
+    this.tree[pos].forEach((subLine) => {
+      const type = this.typeNames.indexOf(subLine.command);
+      const result = this.types[type].run(subLine, pos);
+      if (this.debug) console.log(result);
+      results.push(result);
+    });
+    return results;
   }
 
   runAll() {
-    let r = { type: "start" };
-    while (r.type != "end") r = t.step();
+    let r = [{ type: "start" }];
+    while (r[0].type != "end") r = t.step();
   }
 
   eval(str) {
