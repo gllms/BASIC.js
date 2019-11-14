@@ -3,6 +3,7 @@ class SyntaxTree {
     this.input = input ? input : "";
     this.pos = 0;
     this.goSubPos = undefined;
+    this.ifFalse = false;
     this.tree = {};
     this.scope = {};
     this.debug = false;
@@ -15,14 +16,14 @@ class SyntaxTree {
       chr$: c => String.fromCharCode(c),
       cld: () => this.scope = this.functions,
       cos: c => Math.cos(c),
-      deg: c => c * (180/Math.PI),
-      exp: c => Math.E^c,
+      deg: c => c * (180 / Math.PI),
+      exp: c => Math.E ^ c,
       int: c => Math.floor(c),
       inum: c => Math.round(c),
       len: c => c.length,
       log: c => Math.log(c),
-      mid$: (c, a, b) => c.substring(a-1,a+b-1),
-      mod: (a,b) => a%b
+      mid$: (c, a, b) => c.substring(a - 1, a + b - 1),
+      mod: (a, b) => a % b
     };
     this.types = [
       {
@@ -99,6 +100,21 @@ class SyntaxTree {
           command: "NEXT"
         }),
         run: (t) => ({ type: "next" })
+      }, {
+        type: "IF",
+        reg: /^(?:\d+ )?IF (.*) THEN (.*)$/,
+        parse: (r) => ({
+          command: "IF",
+          condition: r[1],
+          then: r[2]
+        }),
+        run: (t) => {
+          let result = this.eval(t.condition.replace(/></g, "!="));
+          if (result) return { type: "IF" };
+          else {
+            this.ifFalse = true;
+          }
+        }
       }, {
         type: "GOTO",
         reg: /^(?:\d+ )?GOTO (.*)$/,
