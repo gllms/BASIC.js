@@ -38,7 +38,7 @@ class SyntaxTree {
       },
       {
         type: "PRINT",
-        reg: /^(?:\d+ )?PRINT (.*)$/,
+        reg: /^(?:\d+ )?PR(?:INT)? (.*)$/,
         parse: (r) => ({
           command: "PRINT",
           value: r[1]
