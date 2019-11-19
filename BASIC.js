@@ -3,6 +3,7 @@ class SyntaxTree {
     this.input = input ? input : "";
     this.pos = 0;
     this.goSubPos = undefined;
+    this.ifFalse = false;
     this.tree = {};
     this.scope = {};
     this.debug = false;
@@ -15,14 +16,14 @@ class SyntaxTree {
       chr$: c => String.fromCharCode(c),
       cld: () => this.scope = this.functions,
       cos: c => Math.cos(c),
-      deg: c => c * (180/Math.PI),
-      exp: c => Math.E^c,
+      deg: c => c * (180 / Math.PI),
+      exp: c => Math.E ^ c,
       int: c => Math.floor(c),
       inum: c => Math.round(c),
       len: c => c.length,
       log: c => Math.log(c),
-      mid$: (c, a, b) => c.substring(a-1,a+b-1),
-      mod: (a,b) => a%b
+      mid$: (c, a, b) => c.substring(a - 1, a + b - 1),
+      mod: (a, b) => a % b
     };
     this.types = [
       {
@@ -38,7 +39,7 @@ class SyntaxTree {
       },
       {
         type: "PRINT",
-        reg: /^(?:\d+ )?PRINT (.*)$/,
+        reg: /^(?:\d+ )?PR(?:INT)? (.*)$/,
         parse: (r) => ({
           command: "PRINT",
           value: r[1]
@@ -100,6 +101,23 @@ class SyntaxTree {
         }),
         run: (t) => ({ type: "next" })
       }, {
+        type: "IF",
+        reg: /^(?:\d+ )?IF (.*) THEN (.*)$/,
+        parse: (r) => ({
+          command: "IF",
+          condition: r[1],
+          then: this.parse(r[2])
+        }),
+        run: (t) => {
+          let result = this.eval(t.condition.replace(/></g, "!=").replace("=", "=="));
+          if (result) {
+            this.run(t.then);
+          } else {
+            this.ifFalse = true;
+          }
+          return { type: "IF" };
+        }
+      }, {
         type: "GOTO",
         reg: /^(?:\d+ )?GOTO (.*)$/,
         parse: (r) => ({
@@ -156,7 +174,7 @@ class SyntaxTree {
     this.lines = this.input.split("\n");
 
     // give all the RegExp's in the array as a new array
-    let regs = this.types.map((e) => e.reg);
+    this.regs = this.types.map((e) => e.reg);
 
     // create list of types
     this.typeNames = this.types.map((e) => e.type);
@@ -194,18 +212,27 @@ class SyntaxTree {
       this.tree[lineNumber] = [];
 
       subLines.forEach((subLine) => {
-        subLine = subLine.trim();
-        let words = subLine.split(" ");  // split into words
-
-        let type = this.types.findIndex((e, i) => regs[i].test(subLine));
-        if (type >= 0) {
-          const r = this.types[type].reg.exec(subLine);
-          this.tree[lineNumber].push(this.types[type].parse(r));
-        } else {
+        let result = this.parse(subLine);
+        if (result.type == "error") {
           throw new ReferenceError("Function not defined (line " + lineNumber + ")");
+        } else {
+          this.tree[lineNumber].push(result);
         }
       });
     });
+  }
+
+  parse(str) {
+    str = str.trim();
+    let words = str.split(" ");  // split into words
+
+    let type = this.types.findIndex((e, i) => this.regs[i].test(str));
+    if (type >= 0) {
+      const r = this.types[type].reg.exec(str);
+      return this.types[type].parse(r);
+    } else {
+      return { type: "error" };
+    }
   }
 
   // run next line
@@ -219,19 +246,26 @@ class SyntaxTree {
       dpos++;
     }
     if (!this.tree[this.pos]) return [{ type: "end" }];
-    return this.run(this.pos);
+    return this.runLine(this.pos);
   }
 
   // run specific line
-  run(pos) {
+  runLine(pos) {
+    this.ifFalse = false;
     let results = [];
     this.tree[pos].forEach((subLine) => {
-      const type = this.typeNames.indexOf(subLine.command);
-      const result = this.types[type].run(subLine, pos);
-      if (this.debug) console.log(result);
-      results.push(result);
+      results.push(this.run(subLine, pos));
     });
     return results;
+  }
+
+  run(obj, pos) {
+    if (!this.ifFalse) {
+      const type = this.typeNames.indexOf(obj.command);
+      const result = this.types[type].run(obj, pos);
+      if (this.debug) console.log(result);
+      return result;
+    }
   }
 
   runAll() {
