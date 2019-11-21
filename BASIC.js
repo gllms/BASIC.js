@@ -97,7 +97,7 @@ class SyntaxTree {
         run: (t) => ({ type: "next" })
       }, {
         type: "IF",
-        reg: /^(?:\d+ )?IF (.*) THEN (.*)$/,
+        reg: /^(?:\d+ )?IF (.*?) THEN (.*)$/,
         parse: (r) => ({
           command: "IF",
           condition: r[1],
