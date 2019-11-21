@@ -278,7 +278,11 @@ class SyntaxTree {
 
   print(str) {
     this.results.push(str);
-    this.outputElement.innerHTML = this.results.join("<br />");
+    if (this.outputElement) {
+      this.outputElement.innerHTML = this.results.join("<br />");
+    } else {
+      console.log(str);
+    }
   }
 
   reset() {
