@@ -10,20 +10,15 @@ class SyntaxTree {
     this.results = [];
     this.outputElement = undefined;
     this.functions = {
-      abs: c => Math.abs(c),
       asc: c => c.charCodeAt(0),
       atn: c => Math.atan(c),
       chr$: c => String.fromCharCode(c),
       cld: () => this.scope = this.functions,
-      cos: c => Math.cos(c),
       deg: c => c * (180 / Math.PI),
-      exp: c => Math.E ^ c,
       int: c => Math.floor(c),
       inum: c => Math.round(c),
       len: c => c.length,
-      log: c => Math.log(c),
-      mid$: (c, a, b) => c.substring(a - 1, a + b - 1),
-      mod: (a, b) => a % b
+      mid$: (c, a, b) => c.substring(a - 1, a + b - 1)
     };
     this.types = [
       {
