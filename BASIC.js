@@ -271,6 +271,12 @@ class SyntaxTree {
     }, 1000/60);
   }
 
+  parseHex(str) {
+    let s = [];
+    str.match(/.{2}/g).forEach((e) => s.push(parseInt(e, 16).toString(2).padStart(8, 0)));
+    return s;
+  }
+
   eval(str) {
     if (typeof str == "string") str = str.toLowerCase();
     let result = math.evaluate(str, this.scope);
