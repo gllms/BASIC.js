@@ -265,7 +265,10 @@ class SyntaxTree {
 
   runAll() {
     let r = [{ type: "start" }];
-    while (r[0].type != "end") r = t.step();
+    let intr = setInterval(() => {
+      if (r[0].type == "end") clearInterval(intr);
+      r = t.step();
+    }, 1000/60);
   }
 
   eval(str) {
