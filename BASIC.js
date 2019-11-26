@@ -2,6 +2,7 @@ class SyntaxTree {
   constructor(input) {
     this.input = input ? input : "";
     this.pos = 0;
+    this.cpos = {x: 0, y: 0};
     this.goSubPos = undefined;
     this.ifFalse = false;
     this.tree = {};
@@ -148,6 +149,20 @@ class SyntaxTree {
             throw new SyntaxError("RETURN called without GOSUB");
           }
           return { type: "return" };
+        }
+      }, {
+        type: "CPOS",
+        reg: /^\d+ CPOS ?\((\d+), ?(\d+)\)$/,
+        parse: (r) => ({
+          command: "CPOS",
+          pos: {
+            x: parseInt(r[1]),
+            y: parseInt(r[2])
+          }
+        }),
+        run: (t) => {
+          this.cpos = t.pos;
+          return { type: "cpos" };
         }
       }, {
         type: "END",
