@@ -10,7 +10,10 @@ class SyntaxTree {
     this.debug = false;
     this.results = [];
     this.outputElement = undefined;
+    this.screen = [];
     this.canvas = document.getElementById("screen");
+    this.ctx = this.canvas.getContext("2d");
+    this.isDrawing = false;
     this.functions = {
       asc: c => c.charCodeAt(0),
       atn: c => Math.atan(c),
@@ -188,6 +191,7 @@ class SyntaxTree {
       }
     ];
     this.chars = {
+      0: "000000000000000000",
       1: "fed4d4d4d4d4d4c0c0",
       2: "fee2d0c8d0e2fec0c0",
       3: "1e20202020201e0000",
@@ -383,6 +387,14 @@ class SyntaxTree {
         }
       });
     });
+
+    this.createScreen();
+
+    if (!this.isDrawing) requestAnimationFrame(() => this.draw()); this.isDrawing = true;
+  }
+
+  createScreen() {
+    this.screen = Array.from({ length: 24 }, (e) => Array.from({ length: 40 }, (e) => ({ char: 0, user: false })));
   }
 
   parse(str) {
@@ -455,6 +467,7 @@ class SyntaxTree {
 
   print(str) {
     this.results.push(str);
+    this.text(str, false);
     if (this.outputElement) {
       this.outputElement.innerHTML = this.results.join("<br />");
     } else {
@@ -462,35 +475,53 @@ class SyntaxTree {
     }
   }
 
-  draw(chars, user) {
+  text(chars, user) {
     chars.split("").forEach((char) => {
-      let code = char.charCodeAt(0);
-      if (code == 10) this.newline();
-      else {
-        let bin = this.parseHex(this.chars[code]);
-        const ctx = this.canvas.getContext("2d");
-        bin.forEach((e, i) => {
-          e = e.split("");
-          let colour = user ? "white" : "cyan";
-          let c = e.splice(0, 2);
-          if (c[0] == 0 && c[1] == 0) colour = user ? "red" : "black";
-          else if (c[0] == 0 && c[1] == 1) colour = user ? "magenta" : "blue";
-          else if (c[0] == 1 && c[1] == 0) colour = user ? "yellow" : "green";
-          ctx.fillStyle = colour;
-          e.forEach((b, j) => {
-            if (parseInt(b)) ctx.fillRect(this.cpos.x * 6 + j, this.cpos.y * 9 + i, 1, 1);
-          });
-        });
-        if (this.cpos.x > 38) this.newline();
-        else this.cpos.x++;
-      }
+      this.screen[this.cpos.y][this.cpos.x] = {char: char.charCodeAt(0), user: user};
+      if (this.cpos.x > 38) this.newline();
+      else this.cpos.x++;
     });
     this.newline();
+  }
+
+  draw() {
+    let offset = 0;
+    this.screen.forEach((line, i) => {
+      line.forEach((l, j) => {
+        if (l.char == 10) offset++;
+        else {
+          let bin = this.parseHex(this.chars[l.char]);
+          bin.forEach((e, m) => {
+            e = e.split("");
+            let colour = l.user ? "white" : "cyan";
+            let c = e.splice(0, 2);
+            if (c[0] == 0 && c[1] == 0) colour = l.user ? "red" : "black";
+            else if (c[0] == 0 && c[1] == 1) colour = l.user ? "magenta" : "blue";
+            else if (c[0] == 1 && c[1] == 0) colour = l.user ? "yellow" : "green";
+            this.ctx.fillStyle = colour;
+            e.forEach((b, n) => {
+              if (parseInt(b)) this.ctx.fillRect(j * 6 + n, i * 9 + m, 1, 1);
+            });
+          });
+        }
+      });
+    });
+    requestAnimationFrame(() => this.draw());
+  }
+
+  clearScreen() {
+    this.ctx.fillStyle = "black";
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   newline() {
     this.cpos.x = 0;
     if (this.cpos.y < 23) this.cpos.y++
+    else {
+      this.screen.shift();
+      this.screen.push(Array.from({ length: 40 }, (e) => ({ char: 0, user: false })));
+      this.clearScreen();
+    }
   }
 
   reset() {
@@ -498,6 +529,8 @@ class SyntaxTree {
     this.tree = {};
     this.scope = {};
     this.results = [];
+    this.cpos = {x: 0, y: 0};
+    this.createScreen();
     return true;
   }
 }
