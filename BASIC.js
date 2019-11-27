@@ -17,7 +17,7 @@ class SyntaxTree {
     this.functions = {
       asc: c => c.charCodeAt(0),
       atn: c => Math.atan(c),
-      chr$: c => String.fromCharCode(c),
+      chr$: (...c) => c.map((e) => String.fromCharCode(e)).join(""),
       cld: () => this.scope = this.functions,
       deg: c => c * (180 / Math.PI),
       int: c => Math.floor(c),
