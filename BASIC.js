@@ -10,6 +10,7 @@ class SyntaxTree {
     this.debug = false;
     this.results = [];
     this.outputElement = undefined;
+    this.canvas = document.getElementById("screen");
     this.functions = {
       asc: c => c.charCodeAt(0),
       atn: c => Math.atan(c),
@@ -248,6 +249,15 @@ class SyntaxTree {
       90: "fec2c4c8d0e0fec0c0"
     }
     if (input) this.create();
+
+    this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.mozRequestPointerLock;
+    this.canvas.addEventListener("click", () => this.canvas.requestPointerLock());
+    document.addEventListener("keydown", (e) => {
+      if (document.pointerLockElement === this.canvas || document.mozPointerLockElement === this.canvas) {
+        e.preventDefault();
+        // do stuff with e.keyCode
+      }
+    });
   }
 
   // create the syntax tree
@@ -386,7 +396,7 @@ class SyntaxTree {
   draw(chars) {
     chars.split("").forEach((char) => {
       let bin = this.parseHex(this.chars[char.charCodeAt(0)]);
-      const ctx = document.getElementById("screen").getContext("2d");
+      const ctx = this.canvas.getContext("2d");
       ctx.fillStyle = "cyan";
       bin.forEach((e, i) => {
         e = e.split("");
