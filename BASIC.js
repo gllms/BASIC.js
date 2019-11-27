@@ -531,6 +531,7 @@ class SyntaxTree {
     this.results = [];
     this.cpos = {x: 0, y: 0};
     this.createScreen();
+    this.clearScreen();
     return true;
   }
 }
