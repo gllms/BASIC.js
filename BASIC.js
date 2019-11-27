@@ -84,7 +84,7 @@ class SyntaxTree {
               l = this.step();
             }
             this.scope[t.args.var] += step;
-            if (this.scope[t.args.var] >= to) break;
+            if (this.scope[t.args.var] > to) break;
             this.pos = n;
             l = [{ type: "start" }];
           }
