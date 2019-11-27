@@ -462,14 +462,18 @@ class SyntaxTree {
     }
   }
 
-  draw(chars) {
+  draw(chars, user) {
     chars.split("").forEach((char) => {
       let bin = this.parseHex(this.chars[char.charCodeAt(0)]);
       const ctx = this.canvas.getContext("2d");
-      ctx.fillStyle = "cyan";
       bin.forEach((e, i) => {
         e = e.split("");
-        e.splice(0, 2);
+        let colour = user ? "white" : "cyan";
+        let c = e.splice(0, 2);
+        if (c[0] == 0 && c[1] == 0) colour = user ? "red" : "black";
+        else if (c[0] == 0 && c[1] == 1) colour = user ? "magenta" : "blue";
+        else if (c[0] == 1 && c[1] == 0) colour = user ? "yellow" : "green";
+        ctx.fillStyle = colour;
         e.forEach((b, j) => {
           if (parseInt(b)) ctx.fillRect(this.cpos.x * 6 + j, this.cpos.y * 9 + i, 1, 1);
         });
