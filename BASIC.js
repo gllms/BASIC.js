@@ -490,7 +490,7 @@ class SyntaxTree {
       line.forEach((l, j) => {
         if (l.char == 10) offset++;
         else {
-          let bin = this.parseHex(this.chars[l.char]);
+          let bin = this.parseHex(this.chars[l.char] ? this.chars[l.char] : this.chars[63]);
           bin.forEach((e, m) => {
             e = e.split("");
             let colour = l.user ? "white" : "cyan";
