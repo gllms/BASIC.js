@@ -15,6 +15,8 @@
       #output {
         font-family: Consolas, monospace;
         color: black;
+        max-height: 10em;
+        overflow-y: scroll;
       }
 
       button {
@@ -23,6 +25,15 @@
         border-radius: 2px;
         background: black;
         color: white;
+      }
+
+      canvas {
+        background: black;
+        image-rendering: pixelated;
+        width: 100%;
+        max-width: 600px;
+        display: block;
+        margin: 0 auto;
       }
     </style>
   </head>
@@ -38,6 +49,8 @@
     <button onclick="run()">CLICK</button>
     <h2>Output</h2>
     <div id="output">output</div>
+    <br />
+    <canvas id="screen" width="240" height="216"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js"></script>
     <script src="BASIC.js"></script>
     <script src="script.js"></script>

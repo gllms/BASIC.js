@@ -152,7 +152,7 @@ class SyntaxTree {
         }
       }, {
         type: "CPOS",
-        reg: /^\d+ CPOS ?\((\d+), ?(\d+)\)$/,
+        reg: /^(?:\d+ )?CPOS ?\((\d+), ?(\d+)\)$/,
         parse: (r) => ({
           command: "CPOS",
           pos: {
@@ -165,6 +165,19 @@ class SyntaxTree {
           return { type: "cpos" };
         }
       }, {
+        type: "SHAPE",
+        reg: /^(?:\d+ )?SHAPE ?\((\d+), *"(.*)"\)$/,
+        parse: (r) => ({
+          command: "SHAPE",
+          char: r[1],
+          hex: r[2]
+        }),
+        run: (t) => {
+          if (t.hex.length == 18) this.chars[t.char] = t.hex
+          else throw new SyntaxError("Second argument of SHAPE requires length of 18");
+          return { type: "shape" };
+        }
+      }, {
         type: "END",
         reg: /^(?:\d+ )?END.*$/,
         parse: (r) => ({
@@ -173,6 +186,67 @@ class SyntaxTree {
         run: (t) => ({ type: "end" })
       }
     ];
+    this.chars = {
+      32: "c0c0c0c0c0c0c0c0c0",
+      33: "c8c8c8c8c8c0c8c0c0",
+      34: "d4d4c0c0c0c0c0c0c0",
+      35: "d4d4fed4fed4d4c0c0",
+      36: "c8dee8dccafcc8c0c0",
+      37: "f2f2c4c8d0e6e6c0c0",
+      38: "d0e8e8d0eae4dac0c0",
+      39: "c8c8c0c0c0c0c0c0c0",
+      40: "c2c4c8c8c8c4c2c0c0",
+      41: "e0d0c8c8c8d0e0c0c0",
+      42: "c8eadcc8dceac8c0c0",
+      43: "c0c8c8fec8c8c0c0c0",
+      44: "c0c0c0c0c0c8c8d0c0",
+      45: "c0c0c0c0fec0c0c0c0",
+      46: "c0c0c0c0c0c0c8c0c0",
+      47: "c0c2c4c8d0e0c0c0c0",
+      48: "dce2e6eaf2e2dcc0c0",
+      49: "c8d8c8c8c8c8dcc0c0",
+      50: "dce2e2ccd0e0fec0c0",
+      51: "dce2c2ccc2e2dcc0c0",
+      52: "c4ccd4e4fec4c4c0c0",
+      53: "fee0fcc2c2e2dcc0c0",
+      54: "ccd0e0fce2e2dcc0c0",
+      55: "fec2c4c8d0d0d0c0c0",
+      56: "dce2e2dce2e2dcc0c0",
+      57: "dce2e2dec2c4c8c0c0",
+      58: "c0c0c8c0c8c0c0c0c0",
+      59: "c0c0c8c0c0c8c8d0c0",
+      60: "c2c4c8d0c8c4c2c0c0",
+      61: "c0c0fec0fec0c0c0c0",
+      62: "e0d0c8c4c8d0e0c0c0",
+      63: "dce2c4c8c8c0c8c0c0",
+      64: "ffffffffffffffffff",
+      65: "c8dce2e2fee2e2c0c0",
+      66: "fcd2d2dcd2d2fcc0c0",
+      67: "dce2e0e0e0e2dcc0c0",
+      68: "f8e4e2e2e2e4f8c0c0",
+      69: "fee0e0fce0e0fec0c0",
+      70: "fee0e0fce0e0e0c0c0",
+      71: "dce0e0eee2e2dcc0c0",
+      72: "e2e2e2fee2e2e2c0c0",
+      73: "dcc8c8c8c8c8dcc0c0",
+      74: "cec4c4c4c4e4d8c0c0",
+      75: "e2e4e8f0e8e4e2c0c0",
+      76: "e0e0e0e0e0e0fec0c0",
+      77: "e2f6eaeae2e2e2c0c0",
+      78: "e2e2f2eae6e2e2c0c0",
+      79: "dce2e2e2e2e2dcc0c0",
+      80: "fce2e2fce0e0e0c0c0",
+      81: "dce2e2e2eae4dac0c0",
+      82: "fce2e2fce8e4e2c0c0",
+      83: "dce2e0dcc2e2dcc0c0",
+      84: "fec8c8c8c8c8c8c0c0",
+      85: "e2e2e2e2e2e2dcc0c0",
+      86: "e2e2e2d4d4c8c8c0c0",
+      87: "e2e2e2eaeaf6e2c0c0",
+      88: "e2e2d4c8d4e2e2c0c0",
+      89: "e2e2d4c8c8c8c8c0c0",
+      90: "fec2c4c8d0e0fec0c0"
+    }
     if (input) this.create();
   }
 
@@ -307,6 +381,27 @@ class SyntaxTree {
     } else {
       console.log(str);
     }
+  }
+
+  draw(chars) {
+    chars.split("").forEach((char) => {
+      let bin = this.parseHex(this.chars[char.charCodeAt(0)]);
+      const ctx = document.getElementById("screen").getContext("2d");
+      ctx.fillStyle = "cyan";
+      bin.forEach((e, i) => {
+        e = e.split("");
+        e.splice(0, 2);
+        e.forEach((b, j) => {
+          if (parseInt(b)) ctx.fillRect(this.cpos.x * 6 + j, this.cpos.y * 9 + i, 1, 1);
+        });
+      });
+      if (this.cpos.x > 38) {
+        this.cpos.x = 0;
+        this.cpos.y++;
+      } else this.cpos.x++;
+    });
+    this.cpos.x = 0;
+    this.cpos.y++;
   }
 
   reset() {
