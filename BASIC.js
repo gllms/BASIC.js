@@ -160,12 +160,13 @@ class SyntaxTree {
         parse: (r) => ({
           command: "CPOS",
           pos: {
-            x: parseInt(r[1]),
-            y: parseInt(r[2])
+            x: r[1],
+            y: r[2]
           }
         }),
         run: (t) => {
-          this.cpos = t.pos;
+          this.cpos.x = this.eval(t.pos.x);
+          this.cpos.y = this.eval(t.pos.y);
           return { type: "cpos" };
         }
       }, {
