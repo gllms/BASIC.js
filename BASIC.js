@@ -172,6 +172,17 @@ class SyntaxTree {
           return { type: "cpos" };
         }
       }, {
+        type: "CLS",
+        reg: /^(?:\d+ )?CLS/,
+        parse: (r) => ({
+          command: "CLS"
+        }),
+        run: (t) => {
+          this.screen[this.cpos.y].splice(this.cpos.x, 39 - this.cpos.x, ...Array.from({ length: 39 - this.cpos.x }, (e) => ({ char: 0, user: false })));
+          this.screen.splice(this.cpos.y + 1, 23 - this.cpos.y, ...Array.from({ length: 23 - this.cpos.y }, (e) => Array.from({ length: 40 }, (e) => ({ char: 0, user: false }))));
+          return { type: "cls" };
+        }
+      }, {
         type: "SHAPE",
         reg: /^(?:\d+ )?SHAPE ?\((\d+), *"(.*)"\)$/,
         parse: (r) => ({
