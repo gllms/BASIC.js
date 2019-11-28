@@ -358,15 +358,18 @@ class SyntaxTree {
         throw new SyntaxError("Line must start with numbers (line " + lineNumber + ")");
       }
 
-      // find the colons that are not inside strings
-      let letters = line.split("");
-      let inString = false;
       let locs = [];
       let subLines = [];
-      letters.forEach((e, i) => {
-        if (e == "\"") inString = inString == false ? true : false;
-        else if (e == ":") if (!inString) locs.push(i);
-      });
+
+      // find the colons that are not inside strings
+      if (!line.match(/^(?:\d+ )?REM (.*)$/)) {
+        let letters = line.split("");
+        let inString = false;
+        letters.forEach((e, i) => {
+          if (e == "\"") inString = inString == false ? true : false;
+          else if (e == ":") if (!inString) locs.push(i);
+        });
+      }
 
       if (locs.length) {
         locs.push(line.length);
