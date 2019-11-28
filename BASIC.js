@@ -15,15 +15,15 @@ class SyntaxTree {
     this.ctx = this.canvas.getContext("2d");
     this.isDrawing = false;
     this.functions = {
-      asc: c => c.charCodeAt(0),
-      atn: c => Math.atan(c),
-      chr$: (...c) => c.map((e) => String.fromCharCode(e)).join(""),
-      cld: () => this.scope = this.functions,
-      deg: c => c * (180 / Math.PI),
-      int: c => Math.floor(c),
-      inum: c => Math.round(c),
-      len: c => c.length,
-      mid$: (c, a, b) => c.substring(a - 1, a + b - 1)
+      ASC: c => c.charCodeAt(0),
+      ATN: c => Math.atan(c),
+      CHR$: (...c) => c.map((e) => String.fromCharCode(e)).join(""),
+      CLD: () => this.scope = this.functions,
+      DEG: c => c * (180 / Math.PI),
+      INT: c => Math.floor(c),
+      INUM: c => Math.round(c),
+      LEN: c => c.length,
+      MID$: (c, a, b) => c.substring(a - 1, a + b - 1)
     };
     this.types = [
       {
@@ -56,7 +56,7 @@ class SyntaxTree {
         parse: (r) => ({
           command: "LET",
           args: {
-            var: r[2].toLowerCase(),
+            var: r[2],
             expr: r[3]
           }
         }),
@@ -70,7 +70,7 @@ class SyntaxTree {
         parse: (r) => ({
           command: "FOR",
           args: {
-            var: r[1].toLowerCase(),
+            var: r[1],
             start: r[2],
             to: r[3] ? r[3] : r[4],
             step: r[5] ? r[5] : 1
@@ -459,7 +459,6 @@ class SyntaxTree {
   }
 
   eval(str) {
-    if (typeof str == "string") str = str.toLowerCase();
     let result = math.evaluate(str, this.scope);
     return typeof result == "object"
       ? new ReferenceError("Variable not found in scope")
