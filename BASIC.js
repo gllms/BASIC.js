@@ -203,7 +203,7 @@ class SyntaxTree {
         run: (t) => ({ type: "end" })
       }
     ];
-    this.chars = {
+    this.startChars = {
       0: "000000000000000000",
       1: "fed4d4d4d4d4d4c0c0",
       2: "fee2d0c8d0e2fec0c0",
@@ -333,7 +333,9 @@ class SyntaxTree {
       126: "ccd2ede9edd2ccc0c0",
       127: "8080808080808080bf",
       128: "c0c0c0c0c0c0c0c0c0"
-    }
+    };
+    this.chars = Object.assign({}, this.startChars);
+
     if (input) this.create();
 
     this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.mozRequestPointerLock;
@@ -546,6 +548,7 @@ class SyntaxTree {
     this.scope = {};
     this.results = [];
     this.cpos = {x: 0, y: 0};
+    this.chars = Object.assign({}, this.startChars);
     this.createScreen();
     this.clearScreen();
     return true;
