@@ -13,7 +13,8 @@ class SyntaxTree {
     this.screen = [];
     this.canvas = document.getElementById("screen");
     this.ctx = this.canvas.getContext("2d");
-    this.background = "#000000"
+    this.background = "#000000";
+    this.color = undefined;
     this.isDrawing = false;
     this.functions = {
       ASC: c => c.charCodeAt(0),
@@ -179,7 +180,7 @@ class SyntaxTree {
           hex: r[2]
         }),
         run: (t) => {
-          if (t.hex.length == 18) this.chars[t.char] = t.hex
+          if (t.hex.length == 18) this.editedChars[t.char] = t.hex;
           else throw new SyntaxError("Second argument of SHAPE requires length of 18");
           return { type: "shape" };
         }
@@ -188,11 +189,22 @@ class SyntaxTree {
         reg: /^(?:\d+ )?SCREEN ?\((.+)\)$/,
         parse: (r) => ({
           command: "SCREEN",
-          colour: r[1]
+          color: r[1]
         }),
         run: (t) => {
-          this.background = ["#FFFFFF", "#000000", "#00FF00", "#0000FF", "#00FFFF", "#FF0000", "#FFFF00", "#FF00FF", "#FFFFFF"][t.colour];
+          this.background = ["#FFFFFF", "#000000", "#00FF00", "#0000FF", "#00FFFF", "#FF0000", "#FFFF00", "#FF00FF", "#FFFFFF"][t.color];
           return { type: "screen" };
+        }
+      }, {
+        type: "COLOR",
+        reg: /^(?:\d+ )?COLOR ?\((.+)\)$/,
+        parse: (r) => ({
+          command: "COLOR",
+          color: r[1]
+        }),
+        run: (t) => {
+          this.color = [["#FF00FF", "#FFFFFF"], ["#000000", "#00FF00"], ["#FF0000", "#FFFF00"], ["#0000FF", "#00FFFF"], ["#FF00FF", "#FFFFFF"], ["#000000", "#0000FF"], ["#FF0000", "#FF00FF"], ["#00FF00", "#00FFFF"], ["#FFFF00", "#FFFFFF"], ["#000000", "#FF0000"], ["#0000FF", "#FF00FF"], ["#00FF00", "#FFFF00"], ["#00FFFF", "#FFFFFF"]][t.color];
+          return { type: "color" };
         }
       }, {
         type: "END",
@@ -203,7 +215,7 @@ class SyntaxTree {
         run: (t) => ({ type: "end" })
       }
     ];
-    this.startChars = {
+    this.chars = {
       0: "000000000000000000",
       1: "fed4d4d4d4d4d4c0c0",
       2: "fee2d0c8d0e2fec0c0",
@@ -334,7 +346,7 @@ class SyntaxTree {
       127: "8080808080808080bf",
       128: "c0c0c0c0c0c0c0c0c0"
     };
-    this.chars = Object.assign({}, this.startChars);
+    this.editedChars = {};
 
     if (input) this.create();
 
@@ -508,15 +520,20 @@ class SyntaxTree {
       line.forEach((l, j) => {
         if (l.char == 10) offset++;
         else {
-          let bin = this.parseHex(this.chars[l.char] ? this.chars[l.char] : this.chars[63]);
+          let hex = this.editedChars[l.char] || this.chars[l.char] || this.chars[63];
+          let bin = this.parseHex(hex);
           bin.forEach((e, m) => {
             e = e.split("");
-            let colour = l.user ? "#FFFFFF" : "#00FFFF";
+            let color = l.user ? "#FFFFFF" : "#00FFFF";
             let c = e.splice(0, 2);
-            if (c[0] == 0 && c[1] == 0) colour = l.user ? "#FF0000" : "#000000";
-            else if (c[0] == 0 && c[1] == 1) colour = l.user ? "#FF00FF" : "#0000FF";
-            else if (c[0] == 1 && c[1] == 0) colour = l.user ? "#FFFF00" : "#00FF00";
-            this.ctx.fillStyle = colour;
+            if (this.color && !this.editedChars[l.char]) {
+              color = l.user ? this.color[1] : this.color[0];
+            } else {
+              if (c[0] == 0 && c[1] == 0) color = l.user ? "#FF0000" : "#000000";
+              else if (c[0] == 0 && c[1] == 1) color = l.user ? "#FF00FF" : "#0000FF";
+              else if (c[0] == 1 && c[1] == 0) color = l.user ? "#FFFF00" : "#00FF00";
+            }
+            this.ctx.fillStyle = color;
             e.forEach((b, n) => {
               if (parseInt(b)) this.ctx.fillRect(j * 6 + n, i * 9 + m, 1, 1);
             });
@@ -548,7 +565,7 @@ class SyntaxTree {
     this.scope = {};
     this.results = [];
     this.cpos = {x: 0, y: 0};
-    this.chars = Object.assign({}, this.startChars);
+    this.editedChars = {};
     this.createScreen();
     this.clearScreen();
     return true;
