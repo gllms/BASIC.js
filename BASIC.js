@@ -13,6 +13,7 @@ class SyntaxTree {
     this.screen = [];
     this.canvas = document.getElementById("screen");
     this.ctx = this.canvas.getContext("2d");
+    this.background = "#000000"
     this.isDrawing = false;
     this.functions = {
       ASC: c => c.charCodeAt(0),
@@ -496,11 +497,11 @@ class SyntaxTree {
           let bin = this.parseHex(this.chars[l.char] ? this.chars[l.char] : this.chars[63]);
           bin.forEach((e, m) => {
             e = e.split("");
-            let colour = l.user ? "white" : "cyan";
+            let colour = l.user ? "#FFFFFF" : "#00FFFF";
             let c = e.splice(0, 2);
-            if (c[0] == 0 && c[1] == 0) colour = l.user ? "red" : "black";
-            else if (c[0] == 0 && c[1] == 1) colour = l.user ? "magenta" : "blue";
-            else if (c[0] == 1 && c[1] == 0) colour = l.user ? "yellow" : "green";
+            if (c[0] == 0 && c[1] == 0) colour = l.user ? "#FF0000" : "#000000";
+            else if (c[0] == 0 && c[1] == 1) colour = l.user ? "#FF00FF" : "#0000FF";
+            else if (c[0] == 1 && c[1] == 0) colour = l.user ? "#FFFF00" : "#00FF00";
             this.ctx.fillStyle = colour;
             e.forEach((b, n) => {
               if (parseInt(b)) this.ctx.fillRect(j * 6 + n, i * 9 + m, 1, 1);
@@ -513,8 +514,8 @@ class SyntaxTree {
   }
 
   clearScreen() {
-    this.ctx.fillStyle = "black";
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = this.background;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   newline() {
