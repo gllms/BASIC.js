@@ -184,6 +184,17 @@ class SyntaxTree {
           return { type: "shape" };
         }
       }, {
+        type: "SCREEN",
+        reg: /^(?:\d+ )?SCREEN ?\((.+)\)$/,
+        parse: (r) => ({
+          command: "SCREEN",
+          colour: r[1]
+        }),
+        run: (t) => {
+          this.background = ["#FFFFFF", "#000000", "#00FF00", "#0000FF", "#00FFFF", "#FF0000", "#FFFF00", "#FF00FF", "#FFFFFF"][t.colour];
+          return { type: "screen" };
+        }
+      }, {
         type: "END",
         reg: /^(?:\d+ )?END.*$/,
         parse: (r) => ({
@@ -489,6 +500,7 @@ class SyntaxTree {
   }
 
   draw() {
+    this.clearScreen();
     let offset = 0;
     this.screen.forEach((line, i) => {
       line.forEach((l, j) => {
