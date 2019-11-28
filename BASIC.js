@@ -156,7 +156,7 @@ class SyntaxTree {
         }
       }, {
         type: "CPOS",
-        reg: /^(?:\d+ )?CPOS ?\((\d+), ?(\d+)\)$/,
+        reg: /^(?:\d+ )?CPOS ?\((.+), ?(.+)\)$/,
         parse: (r) => ({
           command: "CPOS",
           pos: {
