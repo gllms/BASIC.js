@@ -576,6 +576,8 @@ class SyntaxTree {
     this.scope = {};
     this.results = [];
     this.cpos = {x: 0, y: 0};
+    this.screen = [];
+    this.color = undefined;
     this.editedChars = {};
     this.createScreen();
     this.clearScreen();
