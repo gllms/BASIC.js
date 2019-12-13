@@ -6,7 +6,7 @@ class SyntaxTree {
     this.goSubPos = undefined;
     this.ifFalse = false;
     this.tree = {};
-    this.scope = {};
+    this.scope = {KEY: 0};
     this.debug = false;
     this.results = [];
     this.outputElement = undefined;
@@ -20,7 +20,7 @@ class SyntaxTree {
       ASC: c => c.charCodeAt(0),
       ATN: c => Math.atan(c),
       CHR$: (...c) => c.map((e) => String.fromCharCode(e)).join(""),
-      CLD: () => this.scope = this.functions,
+      CLD: () => this.scope = Object.assign({KEY: 0}, this.functions),
       DEG: c => c * (180 / Math.PI),
       INT: c => Math.floor(c),
       INUM: c => Math.round(c),
@@ -64,6 +64,7 @@ class SyntaxTree {
         }),
         run: (t) => {
           this.scope[t.args.var] = this.eval(t.args.expr);
+          if (t.expr.indexOf("KEY") > -1) this.scope.KEY = 0;
           return { type: "assignment", var: t.args.var, expr: t.args.expr };;
         }
       }, {
@@ -117,6 +118,7 @@ class SyntaxTree {
           } else {
             this.ifFalse = true;
           }
+          if (t.condition.indexOf("KEY") > -1) this.scope.KEY = 0;
           return { type: "IF" };
         }
       }, {
@@ -366,7 +368,7 @@ class SyntaxTree {
     document.addEventListener("keydown", (e) => {
       if (document.pointerLockElement === this.canvas || document.mozPointerLockElement === this.canvas) {
         e.preventDefault();
-        // do stuff with e.keyCode
+        this.scope.KEY = e.keyCode;
       }
     });
   }
@@ -374,7 +376,7 @@ class SyntaxTree {
   // create the syntax tree
   create() {
     // add standard functions to scope
-    this.scope = Object.assign({}, this.functions);
+    this.scope = Object.assign({KEY: 0}, this.functions);
     // split into seperate lines
     this.lines = this.input.split("\n");
 
@@ -573,7 +575,7 @@ class SyntaxTree {
   reset() {
     this.pos = 0;
     this.tree = {};
-    this.scope = {};
+    this.scope = {KEY: 0};
     this.results = [];
     this.cpos = {x: 0, y: 0};
     this.background = "#000000";
