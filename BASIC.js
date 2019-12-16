@@ -16,6 +16,7 @@ class SyntaxTree {
     this.background = "#000000";
     this.color = undefined;
     this.isDrawing = false;
+    this.showCaret = false;
     this.functions = {
       ASC: c => c.charCodeAt(0),
       ATN: c => Math.atan(c),
@@ -547,8 +548,10 @@ class SyntaxTree {
       });
     });
 
-    let caret = this.parseHex("485c7e7e5c48404040");
-    this.drawChar(caret, this.cpos.x, this.cpos.y, -1, true);
+    if (this.showCaret) { 
+      let caret = this.parseHex("485c7e7e5c48404040");
+      this.drawChar(caret, this.cpos.x, this.cpos.y, -1, true);
+    }
 
     requestAnimationFrame(() => this.draw());
   }
