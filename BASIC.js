@@ -64,7 +64,6 @@ class SyntaxTree {
         }),
         run: (t) => {
           this.scope[t.args.var] = this.eval(t.args.expr);
-          if (t.expr.indexOf("KEY") > -1) this.scope.KEY = 0;
           return { type: "assignment", var: t.args.var, expr: t.args.expr };;
         }
       }, {
@@ -118,7 +117,6 @@ class SyntaxTree {
           } else {
             this.ifFalse = true;
           }
-          if (t.condition.indexOf("KEY") > -1) this.scope.KEY = 0;
           return { type: "IF" };
         }
       }, {
@@ -426,6 +424,7 @@ class SyntaxTree {
         if (result.type == "error") {
           throw new ReferenceError("Function not defined (line " + lineNumber + ")");
         } else {
+          result.src = subLine;
           this.tree[lineNumber].push(result);
         }
       });
@@ -473,6 +472,7 @@ class SyntaxTree {
     let results = [];
     this.tree[pos].forEach((subLine) => {
       results.push(this.run(subLine, pos));
+      if (subLine.src.indexOf("KEY") > -1) this.scope.KEY = 0;
     });
     return results;
   }
