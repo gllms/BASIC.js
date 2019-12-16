@@ -16,27 +16,27 @@ QUnit.test("create class without arguments", function (assert) {
 });
 
 QUnit.module("functions");
-QUnit.test("asc", function (assert) {
-  assert.deepEqual(t.functions.asc("Apple"), 65, "chr$(\"Apple\") should give 65");
+QUnit.test("ASC", function (assert) {
+  assert.deepEqual(t.functions.ASC("Apple"), 65, "CHR$(\"Apple\") should give 65");
 });
-QUnit.test("atn", function (assert) {
-  assert.deepEqual(t.functions.atn(0), 0, "atn(0) should give 0");
+QUnit.test("ATN", function (assert) {
+  assert.deepEqual(t.functions.ATN(0), 0, "ATN(0) should give 0");
 });
-QUnit.test("chr$", function (assert) {
-  assert.deepEqual(t.functions.chr$(65), "A", "chr$(65) should give 'A'");
+QUnit.test("CHR$", function (assert) {
+  assert.deepEqual(t.functions.CHR$(65), "A", "CHR$(65) should give 'A'");
 });
-QUnit.test("deg", function (assert) {
-  assert.deepEqual(t.functions.deg(Math.PI/2), 90, "deg(PI/2) should give 90");
+QUnit.test("DEG", function (assert) {
+  assert.deepEqual(t.functions.DEG(Math.PI/2), 90, "DEG(PI/2) should give 90");
 });
-QUnit.test("int", function (assert) {
-  assert.deepEqual(t.functions.int(32.8), 32, "int(32.8) should give 32");
+QUnit.test("INT", function (assert) {
+  assert.deepEqual(t.functions.INT(32.8), 32, "INT(32.8) should give 32");
 });
-QUnit.test("inum", function (assert) {
-  assert.deepEqual(t.functions.inum(32.8), 33, "inum(32.8) should give 33");
+QUnit.test("INUM", function (assert) {
+  assert.deepEqual(t.functions.INUM(32.8), 33, "INUM(32.8) should give 33");
 });
-QUnit.test("len", function (assert) {
-  assert.deepEqual(t.functions.len("Apple"), 5, "len(\"Apple\") should give 5");
+QUnit.test("LEN", function (assert) {
+  assert.deepEqual(t.functions.LEN("Apple"), 5, "LEN(\"Apple\") should give 5");
 });
-QUnit.test("mid$", function (assert) {
-  assert.deepEqual(t.functions.mid$("Apple", 3, 2), "pl", "mid$(\"Apple\", 3, 2) should give \"pl\"");
+QUnit.test("MID$", function (assert) {
+  assert.deepEqual(t.functions.MID$("Apple", 3, 2), "pl", "MID$(\"Apple\", 3, 2) should give \"pl\"");
 });
