@@ -527,32 +527,45 @@ class SyntaxTree {
   draw() {
     this.clearScreen();
     let offset = 0;
-    this.screen.forEach((line, i) => {
-      line.forEach((l, j) => {
+    this.screen.forEach((line, j) => {
+      line.forEach((l, i) => {
         if (l.char == 10) offset++;
         else {
           let hex = this.editedChars[l.char] || this.chars[l.char] || this.chars[63];
           let bin = this.parseHex(hex);
-          bin.forEach((e, m) => {
-            e = e.split("");
-            let color = l.user ? "#FFFFFF" : "#00FFFF";
-            let c = e.splice(0, 2);
-            if (this.color && !this.editedChars[l.char]) {
-              color = l.user ? this.color[1] : this.color[0];
-            } else {
-              if (c[0] == 0 && c[1] == 0) color = l.user ? "#FF0000" : "#000000";
-              else if (c[0] == 0 && c[1] == 1) color = l.user ? "#FF00FF" : "#0000FF";
-              else if (c[0] == 1 && c[1] == 0) color = l.user ? "#FFFF00" : "#00FF00";
-            }
-            this.ctx.fillStyle = color;
-            e.forEach((b, n) => {
-              if (parseInt(b)) this.ctx.fillRect(j * 6 + n, i * 9 + m, 1, 1);
-            });
-          });
+          this.drawChar(bin, i, j, l.char, l.user);
         }
       });
     });
+
+    let caret = this.parseHex("485c7e7e5c48404040");
+    this.drawChar(caret, this.cpos.x, this.cpos.y, -1, true);
+
     requestAnimationFrame(() => this.draw());
+  }
+
+  drawChar(bin, i, j, char, user) {
+    bin.forEach((e, m) => {
+      e = e.split("");
+      let color = user ? "#FFFFFF" : "#00FFFF";
+      let c = e.splice(0, 2);
+      if (this.color && !this.editedChars[char]) {
+        color = user ? this.color[1] : this.color[0];
+      }
+      else {
+        if (c[0] == 0 && c[1] == 0)
+          color = user ? "#FF0000" : "#000000";
+        else if (c[0] == 0 && c[1] == 1)
+          color = user ? "#FF00FF" : "#0000FF";
+        else if (c[0] == 1 && c[1] == 0)
+          color = user ? "#FFFF00" : "#00FF00";
+      }
+      this.ctx.fillStyle = color;
+      e.forEach((b, n) => {
+        if (parseInt(b))
+          this.ctx.fillRect(i * 6 + n, j * 9 + m, 1, 1);
+      });
+    });
   }
 
   clearScreen() {
