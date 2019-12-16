@@ -395,27 +395,8 @@ class SyntaxTree {
         throw new SyntaxError("Line must start with numbers (line " + lineNumber + ")");
       }
 
-      let locs = [];
-      let subLines = [];
-
       // find the colons that are not inside strings
-      if (!line.match(/^(?:\d+ )?REM (.*)$/)) {
-        let letters = line.split("");
-        let inString = false;
-        letters.forEach((e, i) => {
-          if (e == "\"") inString = inString == false ? true : false;
-          else if (e == ":") if (!inString) locs.push(i);
-        });
-      }
-
-      if (locs.length) {
-        locs.push(line.length);
-        locs.forEach((e, i) => {
-          subLines.push(line.slice(locs[i - 1] + (i > 0 ? 1 : 0), e));
-        })
-      } else {
-        subLines.push(line);
-      }
+      let subLines = this.split(line, ":");
 
       this.tree[lineNumber] = [];
 
@@ -433,6 +414,32 @@ class SyntaxTree {
     this.createScreen();
 
     if (!this.isDrawing) requestAnimationFrame(() => this.draw()); this.isDrawing = true;
+  }
+
+  split(line, separator) {
+    let subLines = [];
+    let locs = [];
+    if (!line.match(/^(?:\d+ )?REM (.*)$/)) {
+      let letters = line.split("");
+      let inString = false;
+      letters.forEach((e, i) => {
+        if (e == "\"")
+          inString = inString == false ? true : false;
+        else if (e == separator)
+          if (!inString)
+            locs.push(i);
+      });
+    }
+    if (locs.length) {
+      locs.push(line.length);
+      locs.forEach((e, i) => {
+        subLines.push(line.slice(locs[i - 1] + (i > 0 ? 1 : 0), e));
+      });
+    }
+    else {
+      subLines.push(line);
+    }
+    return subLines;
   }
 
   createScreen() {
