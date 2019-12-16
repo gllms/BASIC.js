@@ -9,7 +9,6 @@ class SyntaxTree {
     this.scope = {KEY: 0};
     this.debug = false;
     this.results = [];
-    this.outputElement = undefined;
     this.screen = [];
     this.canvas = document.getElementById("screen");
     this.ctx = this.canvas.getContext("2d");
@@ -518,11 +517,6 @@ class SyntaxTree {
   print(str) {
     this.results.push(str);
     this.text(str, false);
-    if (this.outputElement) {
-      this.outputElement.innerHTML = this.results.join("<br />");
-    } else {
-      console.log(str);
-    }
   }
 
   text(chars, user) {

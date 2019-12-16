@@ -1,12 +1,10 @@
 let t = new SyntaxTree();
 t.debug = false;
-t.outputElement = $("#output");
 
 function run() {
   t.reset();
   t.input = $("#input").value;
   t.create();
-  $("#output").innerHTML = "";
   t.runAll();
 }
 
