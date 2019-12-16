@@ -9,6 +9,8 @@ class SyntaxTree {
     this.scope = {KEY: 0};
     this.debug = false;
     this.results = [];
+    this.data = [];
+    this.currentData = [];
     this.screen = [];
     this.canvas = document.getElementById("screen");
     this.ctx = this.canvas.getContext("2d");
@@ -218,6 +220,29 @@ class SyntaxTree {
           return { type: "color" };
         }
       }, {
+        type: "DATA",
+        reg: /^(?:\d+ )?DATA (.*)$/,
+        parse: (r) => ({
+          command: "DATA",
+          args: r[1]
+        }),
+        run: (t) => {
+          this.data = this.data.concat(this.split(t.args, ","));
+        }
+      }, {
+        type: "READ",
+        reg: /^(?:\d+ )?READ (.*)$/,
+        parse: (r) => ({
+          command: "READ",
+          args: r[1]
+        }),
+        run: (t) => {
+          this.split(t.args, ",").forEach((e) => {
+            this.scope[e.trim()] = this.eval(this.currentData.shift());
+          });
+          return { type: "read" };
+        }
+      }, {
         type: "END",
         reg: /^(?:\d+ )?END.*$/,
         parse: (r) => ({
@@ -375,6 +400,7 @@ class SyntaxTree {
   create() {
     // add standard functions to scope
     this.scope = Object.assign({KEY: 0}, this.functions);
+
     // split into seperate lines
     this.lines = this.input.split("\n");
 
@@ -407,8 +433,14 @@ class SyntaxTree {
         } else {
           result.src = subLine;
           this.tree[lineNumber].push(result);
+          if (result.command == "DATA") {
+            this.types[this.typeNames.indexOf("DATA")].run(result);
+          }
         }
       });
+
+      // backup data
+      this.currentData = Object.assign([], this.data);
     });
 
     this.createScreen();
@@ -486,19 +518,23 @@ class SyntaxTree {
 
   run(obj, pos) {
     if (!this.ifFalse) {
-      const type = this.typeNames.indexOf(obj.command);
-      const result = this.types[type].run(obj, pos);
-      if (this.debug) console.log(result);
-      return result;
+      if (obj.command == "DATA") {
+        return { type: "data" }
+      } else {
+        const type = this.typeNames.indexOf(obj.command);
+        const result = this.types[type].run(obj, pos);
+        if (this.debug) console.log(result);
+        return result;
+      }
     }
   }
 
   runAll() {
     let r = [{ type: "start" }];
-    let intr = setInterval(() => {
+    let intr = setInterval((r) => {
       if (r[0].type == "end") clearInterval(intr);
       r = t.step();
-    }, 1000/60);
+    }, 1000/60, r);
   }
 
   parseHex(str) {
@@ -592,8 +628,9 @@ class SyntaxTree {
   reset() {
     this.pos = 0;
     this.tree = {};
-    this.scope = {KEY: 0};
+    this.scope = Object.assign({KEY: 0}, this.functions);
     this.results = [];
+    this.currentData = Object.assign([], this.data);
     this.cpos = {x: 0, y: 0};
     this.background = "#000000";
     this.color = undefined;
