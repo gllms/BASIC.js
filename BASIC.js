@@ -251,6 +251,8 @@ class SyntaxTree {
         run: (t) => ({ type: "end" })
       }
     ];
+
+    // the definition of the ascii table characters
     this.chars = {
       0: "000000000000000000",
       1: "fed4d4d4d4d4d4c0c0",
@@ -382,16 +384,21 @@ class SyntaxTree {
       127: "8080808080808080bf",
       128: "c0c0c0c0c0c0c0c0c0"
     };
+
+    // the characters changed with the SHAPE function
     this.editedChars = {};
 
+    // only create when input is given
     if (input) this.create();
 
+    // mouse lock logic
     this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.mozRequestPointerLock;
     this.canvas.addEventListener("click", () => this.canvas.requestPointerLock());
     document.addEventListener("keydown", (e) => {
+      // only capture keys when mouse is locked
       if (document.pointerLockElement === this.canvas || document.mozPointerLockElement === this.canvas) {
-        e.preventDefault();
-        this.scope.KEY = e.keyCode;
+        e.preventDefault(); // don't do the default action
+        this.scope.KEY = e.keyCode; // do this
       }
     });
   }
@@ -424,6 +431,7 @@ class SyntaxTree {
       // find the colons that are not inside strings
       let subLines = this.split(line, ":");
 
+      // create empty array to put the subLines in
       this.tree[lineNumber] = [];
 
       subLines.forEach((subLine) => {
@@ -433,6 +441,7 @@ class SyntaxTree {
         } else {
           result.src = subLine;
           this.tree[lineNumber].push(result);
+          // already process DATA in advance
           if (result.command == "DATA") {
             this.types[this.typeNames.indexOf("DATA")].run(result);
           }
@@ -445,9 +454,11 @@ class SyntaxTree {
 
     this.createScreen();
 
+    // only draw if not drawing already
     if (!this.isDrawing) requestAnimationFrame(() => this.draw()); this.isDrawing = true;
   }
 
+  // splits string into parts, but not when the seperator is between double quotes
   split(line, separator) {
     let subLines = [];
     let locs = [];
@@ -474,6 +485,7 @@ class SyntaxTree {
     return subLines;
   }
 
+  // creates 2D array
   createScreen() {
     this.screen = Array.from({ length: 24 }, (e) => Array.from({ length: 40 }, (e) => ({ char: 0, user: false })));
   }
@@ -511,6 +523,7 @@ class SyntaxTree {
     let results = [];
     this.tree[pos].forEach((subLine) => {
       results.push(this.run(subLine, pos));
+      // reset KEY when it occured in the statement
       if (subLine.src.indexOf("KEY") > -1) this.scope.KEY = 0;
     });
     return results;
@@ -518,6 +531,7 @@ class SyntaxTree {
 
   run(obj, pos) {
     if (!this.ifFalse) {
+      // don't do anything when it's DATA, it's already processed
       if (obj.command == "DATA") {
         return { type: "data" }
       } else {
@@ -529,14 +543,16 @@ class SyntaxTree {
     }
   }
 
+  // run all lines
   runAll() {
     let r = [{ type: "start" }];
     let intr = setInterval((r) => {
       if (r[0].type == "end") clearInterval(intr);
       r = t.step();
-    }, 1000/60, r);
+    }, 1000/60, r); // small delay so infinite loops don't crash
   }
 
+  // converts hexadecimal to binary
   parseHex(str) {
     let s = [];
     str.match(/.{2}/g).forEach((e) => s.push(parseInt(e, 16).toString(2).padStart(8, 0)));
@@ -586,6 +602,7 @@ class SyntaxTree {
     requestAnimationFrame(() => this.draw());
   }
 
+  // convert binary into pixels
   drawChar(bin, i, j, char, user) {
     bin.forEach((e, m) => {
       e = e.split("");
@@ -625,6 +642,7 @@ class SyntaxTree {
     }
   }
 
+  // put everything back at the default values
   reset() {
     this.pos = 0;
     this.tree = {};
